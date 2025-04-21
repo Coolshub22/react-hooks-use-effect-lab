@@ -1,31 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
 
 function Question({ question, onAnswered }) {
-  const [timeRemaining, setTimeRemaining] = useState(10);
+  const [timeRemaining, setTimeRemaining] = useState(10); // Start with 10 seconds
 
-  // add useEffect code
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setTimeRemaining((prev) => {
+        if (prev === 1) {
+          // If time hits 0, reset timer and trigger onAnswered callback
+          onAnswered(false); // False indicates the time is up
+          return 10; // Reset to 10 seconds
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-  function handleAnswer(isCorrect) {
-    setTimeRemaining(10);
-    onAnswered(isCorrect);
-  }
-
-  const { id, prompt, answers, correctIndex } = question;
+    // Cleanup function to clear the timeout when the component is unmounted or re-renders
+    return () => clearTimeout(timer);
+  }, [timeRemaining, onAnswered]); // Dependencies: run effect whenever timeRemaining or onAnswered changes
 
   return (
-    <>
-      <h1>Question {id}</h1>
-      <h3>{prompt}</h3>
-      {answers.map((answer, index) => {
-        const isCorrect = index === correctIndex;
-        return (
-          <button key={answer} onClick={() => handleAnswer(isCorrect)}>
-            {answer}
-          </button>
-        );
-      })}
-      <h5>{timeRemaining} seconds remaining</h5>
-    </>
+    <div>
+      <p>{timeRemaining} seconds remaining</p>
+      <p>{question.prompt}</p>
+      <ul>
+        {question.answers.map((answer, index) => (
+          <li key={index}>{answer}</li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
